@@ -1,0 +1,67 @@
+============== -*- outline -*- ==============
+
+                    tevent
+2009/09  morimoto
+=============================================
+
+* これは？
+
+	kmenu はキーで，
+	tmenu はタッチスクリーンで
+	イベントをキャッチして，割り当てたスクリプトを実行できるようにするコマンド
+
+* How to use kmenu ?
+
+	オプションで event デバイスの指定が必要
+	それ以外を無しで実行するとキーの up/down が表示される
+
+	> kmenu /dev/input/event0
+	event scanning
+	----------------
+	Event: type 1 (EV_KEY), code 2 (KEY_1), value 1
+	Event: type 0 (EV_SYN), code 0 (EV_SYN), value 0
+	----------------
+	Event: type 1 (EV_KEY), code 2 (KEY_1), value 0
+	Event: type 0 (EV_SYN), code 0 (EV_SYN), value 0
+	...
+
+	例えば KEY_1 が押されたときに "hallo world" を表示したい場合
+
+	> kmenu /dev/input/event0 2 1 "echo hallo world"
+
+	2 は KEY_1 の code, 1 は「押された」と言う意味
+	（上の code 2 KEY_1 と value に注目）
+
+	以下のようにすると KYE_3 を押されたときに kmenu を終了する
+
+	> kmenu /dev/input/event0 4 1 0
+
+* How to use tmenu ?
+
+	オプションで event デバイスの指定が必要
+	それ以外を無しで実行するとスクリーンの状態が表示される
+
+	> tmenu /dev/input/event1
+	event scanning
+	----------------
+	Event: type 3 (EV_ABS), code 0 (ABS_X), value 2592
+	Event: type 3 (EV_ABS), code 24 (ABS_PRESSURE), value 168
+	Event: type 0 (EV_SYN), code 0 (EV_SYN), value 0
+	----------------
+	Event: type 3 (EV_ABS), code 0 (ABS_X), value 2489
+	Event: type 3 (EV_ABS), code 1 (ABS_Y), value 1712
+	....
+
+
+	例えば x = 1500, y = 1500, で 1000 の範囲が押された場合に
+	"hallo world" を表示したい場合
+
+	> tmenu /dev/input/event1 1500 1500 1000 "echo hallo world"
+
+	以下のようにすると上記範囲を押すと tmenu を終了する
+
+	> tmenu /dev/input/event1 1500 1500 1000 0
+
+* static リンクにするには？
+
+	EXTR=-static make
