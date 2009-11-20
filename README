@@ -1,0 +1,65 @@
+============== -*- outline -*- ==============
+
+                    tevent
+2009/09  morimoto
+=============================================
+
+* What is this?
+
+	Commandline programs to run scripts based on events:
+	- kmenu responds to key events,
+	- tmenu responds to touchscreen events.
+
+* How to use kmenu ?
+
+	You need to specify the device to watch for events. If no other
+	options are given, all key up/down events will be displayed:
+
+	> kmenu /dev/input/event0
+	event scanning
+	----------------
+	Event: type 1 (EV_KEY), code 2 (KEY_1), value 1
+	Event: type 0 (EV_SYN), code 0 (EV_SYN), value 0
+	----------------
+	Event: type 1 (EV_KEY), code 2 (KEY_1), value 0
+	Event: type 0 (EV_SYN), code 0 (EV_SYN), value 0
+	...
+
+	For example, to print "hallo world" when KEY_1 is pressed:
+
+	> kmenu /dev/input/event0 2 1 "echo hallo world"
+
+	where 2 is the code for KEY_1, and 1 means "pressed".
+
+	The following will exit kmenu when KEY_3 is pressed:
+
+	> kmenu /dev/input/event0 4 1 0
+
+* How to use tmenu ?
+
+	You need to specify the device to watch for events. If no other
+	options are given, the screen status will be monitored:
+
+	> tmenu /dev/input/event1
+	event scanning
+	----------------
+	Event: type 3 (EV_ABS), code 0 (ABS_X), value 2592
+	Event: type 3 (EV_ABS), code 24 (ABS_PRESSURE), value 168
+	Event: type 0 (EV_SYN), code 0 (EV_SYN), value 0
+	----------------
+	Event: type 3 (EV_ABS), code 0 (ABS_X), value 2489
+	Event: type 3 (EV_ABS), code 1 (ABS_Y), value 1712
+	....
+
+	For example, to print "hallo world" when a press occurs within a
+	region of size 1000 around the point x = 1500, y = 1500:
+
+	> tmenu /dev/input/event1 1500 1500 1000 "echo hallo world"
+
+	The following will exit tmenu when such a press occurs:
+
+	> tmenu /dev/input/event1 1500 1500 1000 0
+
+* How to link statically ?
+
+	EXTR=-static make
