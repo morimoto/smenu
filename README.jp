@@ -32,7 +32,7 @@
 	2 は KEY_1 の code, 1 は「押された」と言う意味
 	（上の code 2 KEY_1 と value に注目）
 
-	以下のようにすると KYE_3 を押されたときに kmenu を終了する
+	以下のようにすると KEY_3 を押されたときに kmenu を終了する
 
 	> kmenu /dev/input/event0 4 1 0
 
