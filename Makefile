@@ -24,9 +24,8 @@ tmenu: $(TOBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(TOBJ)
 	$(STRIP) $@
 
-sh3 sh4:
-	make HOST=$@-linux kmenu
-	make HOST=$@-linux tmenu
+sh3 sh4 arm:
+	make HOST=$@-linux kmenu tmenu
 
 clean:
 	rm -fr kmenu
