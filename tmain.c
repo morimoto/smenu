@@ -219,6 +219,7 @@ int main ( int nArgc, char *pstrArgv[] )
     const char *dev;
     const char *title = NULL;
     bool exit_error = false;
+    int rc = ERROR_EXIT; // assume error
 
     //----------------------
     // init list head
@@ -239,6 +240,7 @@ int main ( int nArgc, char *pstrArgv[] )
     //----------------------
     // start scan
     //----------------------
+    rc = 0;
     ScanLoop( &lhead, title, exit_error, event, decide );
     EventClose(  );
 
@@ -247,6 +249,6 @@ main_end:
     list_for_each_entry_safe(pos, npos, &lhead, lst)
         free ( pos );
 
-    return 0;
+    return rc;
 
 }

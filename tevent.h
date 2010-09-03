@@ -10,10 +10,12 @@ Copyright (c) Kuninori Morimoto <morimoto.kuninori@renesas.com>
 #define TEVENT_H
 
 #include <stdbool.h>
-#include "./list.h"
+#include "list.h"
 
 #define K_VERSION "0.0.2"  // see VERSION file for detail
 #define T_VERSION "0.0.1"  // see VERSION file for detail
+
+#define ERROR_EXIT 1       // program exit code in case of error
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
