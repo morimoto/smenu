@@ -432,9 +432,12 @@ void ScanLoop( struct list_head *pLhead,
 
                     show = true;
                     sleep( 1 );
+                    goto quit_loop;
                 }
             } // list_for_each_entry
         } // for
+quit_loop:
+        ;
     } // while
 }
 
