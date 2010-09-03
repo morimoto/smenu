@@ -321,7 +321,7 @@ static int getevent( struct input_event **ppEvent )
         return -1;
     }
 
-    size = read( g_Descriptor , _event , ARRAY_SIZE(_event) );
+    size = read( g_Descriptor , _event , sizeof(_event) );
     size /= (int)sizeof( struct input_event );
 
     if ( size < 1 )
