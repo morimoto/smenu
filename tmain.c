@@ -217,7 +217,7 @@ int main ( int nArgc, char *pstrArgv[] )
     struct list_head lhead;
     struct event_table *pos, *npos;
     const char *dev;
-    const char *title = "event scanning";
+    const char *title = NULL;
     bool exit_error = false;
 
     //----------------------

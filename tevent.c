@@ -372,19 +372,15 @@ void ScanLoop( struct list_head *pLhead,
     struct input_event *event;
     struct event_table *pos;
     int size, i;
-    bool show = false;
-
-    printf( "%s\n", pTitle );
+    bool show = true;
 
     while (1) {
 
         //----------------------
         // printf title
         //----------------------
-        if (show) {
-            sleep( 1 );
+        if ( show && pTitle )
             printf( "%s\n", pTitle );
-        }
 
         show = false;
 
@@ -429,6 +425,7 @@ void ScanLoop( struct list_head *pLhead,
                     return;
 
                 show = true;
+                sleep( 1 );
             }
         }
     }
