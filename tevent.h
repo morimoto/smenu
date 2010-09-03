@@ -19,7 +19,7 @@ Copyright (c) Kuninori Morimoto <morimoto.kuninori@renesas.com>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
-#define VMAX 3
+#define VMAX 4
 struct event_table {
     struct list_head lst;
     int value[VMAX];
@@ -31,8 +31,8 @@ void EventClose( void );
 void ScanLoop( struct list_head *pLhead,
                const char *pTitle,
                bool exit_error,
-               bool (*hEvent)(struct input_event *event, int size),
-               bool (*hDecide)(struct input_event *event, int size, struct event_table *pos));
+               bool (*hEvent)(struct input_event *event),
+               bool (*hDecide)(struct input_event *event, struct event_table *pos));
 
 
 

@@ -141,12 +141,9 @@ static bool arg_analyze ( struct list_head *pLhead,
 //          event
 //
 //=====================================
-static bool event(struct input_event *pEvent, int nSize)
+static bool event(struct input_event *pEvent)
 {
-    if ( nSize != 2 )
-        return false;
-
-    if ( pEvent[0].type != EV_KEY )
+    if ( EV_KEY != pEvent->type )
         return false;
 
     return true;
@@ -158,11 +155,10 @@ static bool event(struct input_event *pEvent, int nSize)
 //
 //=====================================
 static bool decide(struct input_event *pEvent,
-                   int                 nSize,
                    struct event_table *pPos)
 {
-    if (( pEvent[0].code  == pPos->value[K] ) &&
-        ( pEvent[0].value == pPos->value[V] ))
+    if (( pEvent->code  == pPos->value[K] ) &&
+        ( pEvent->value == pPos->value[V] ))
         return true;
 
     return false;

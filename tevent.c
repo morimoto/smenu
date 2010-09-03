@@ -10,6 +10,7 @@ Copyright (c) Kuninori Morimoto <morimoto.kuninori@renesas.com>
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "./tevent.h"
 
@@ -366,8 +367,8 @@ void EventClose( void )
 void ScanLoop( struct list_head *pLhead,
                const char *pTitle,
                bool exit_error,
-               bool (*hEvent)(struct input_event *event, int size),
-               bool (*hDecide)(struct input_event *event, int size, struct event_table *pos))
+               bool (*hEvent)(struct input_event *event),
+               bool (*hDecide)(struct input_event *event, struct event_table *pos))
 {
     struct input_event *event;
     struct event_table *pos;
@@ -389,8 +390,6 @@ void ScanLoop( struct list_head *pLhead,
         // in keysc, size is always 2
         //----------------------
         size = getevent( &event );
-        if ( !hEvent( event, size ))
-            continue;
 
         //----------------------
         // if no key is registered,
@@ -407,27 +406,35 @@ void ScanLoop( struct list_head *pLhead,
         }
 
         //----------------------
-        // check all list
+        // loop through each event
         //----------------------
-        list_for_each_entry( pos, pLhead, lst ) {
+        for (; size; --size, ++event) {
+            if ( !hEvent( event ))
+                continue;
 
             //----------------------
-            // if it is registered key,
-            // run call back function
-            // "0" mean return
+            // check all list
             //----------------------
-            if ( hDecide( event, size , pos )) {
+            list_for_each_entry( pos, pLhead, lst ) {
 
-                if ( !pos->script )
-                    return;
+                //----------------------
+                // if it is registered key,
+                // run call back function
+                // "0" mean return
+                //----------------------
+                if ( hDecide( event , pos )) {
 
-                if ( system( pos->script ) && exit_error )
-                    return;
+                    if ( !pos->script )
+                        return;
 
-                show = true;
-                sleep( 1 );
-            }
-        }
-    }
+                    if ( system( pos->script ) && exit_error )
+                        return;
+
+                    show = true;
+                    sleep( 1 );
+                }
+            } // list_for_each_entry
+        } // for
+    } // while
 }
 

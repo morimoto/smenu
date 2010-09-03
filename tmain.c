@@ -12,11 +12,30 @@ Copyright (c) Kuninori Morimoto <morimoto.kuninori@renesas.com>
 #include <string.h>
 #include <unistd.h>
 
-#include "./tevent.h"
+#include "tevent.h"
 
-#define X 0
-#define Y 1
-#define A 2
+#define X 0  // X position of touch coordinate
+#define Y 1  // Y position of touch coordinate
+#define A 2  // radius at touch coordinate
+#define M 3  // match flags
+
+#define MATCH_X ( 1 << 0 )  // X coordinate was matched
+#define MATCH_Y ( 1 << 1 )  // Y coordinate was matched
+
+//----------------------
+// ABS_MT_POSITION_*
+//----------------------
+#ifdef ABS_MT_POSITION_X
+#  define CASE_ABS_MT_POSITION_X  case ABS_MT_POSITION_X:
+#else
+#  define CASE_ABS_MT_POSITION_X
+#endif
+
+#ifdef ABS_MT_POSITION_Y
+#  define CASE_ABS_MT_POSITION_Y case ABS_MT_POSITION_Y:
+#else
+#  define CASE_ABS_MT_POSITION_Y
+#endif
 
 //=====================================
 //
@@ -117,6 +136,7 @@ static bool arg_analyze ( struct list_head *pLhead,
         pos->value[X]  = atoi( pstrArgv[ i + 0 ] );
         pos->value[Y]  = atoi( pstrArgv[ i + 1 ] );
         pos->value[A]  = atoi( pstrArgv[ i + 2 ] );
+        pos->value[M]  = 0;
         pos->script = pstrArgv[ i + 3 ];
         ARGINC(4);
 
@@ -146,23 +166,12 @@ static bool arg_analyze ( struct list_head *pLhead,
 //          event
 //
 //=====================================
-static bool event(struct input_event *pEvent, int nSize)
+static bool event(struct input_event *pEvent)
 {
-    int i;
+    if ( EV_ABS == pEvent->type )
+        return true;
 
-    for ( i=0 ; i<nSize ; i++ ) {
-        switch ( pEvent[i].type ) {
-        case EV_KEY:
-        case EV_ABS:
-        case EV_SYN:
-            break;
-        default:
-            printf( "unknown type %d\n" , pEvent[i].type );
-            return false;
-        }
-    }
-
-    return true;
+    return false;
 }
 
 //=====================================
@@ -172,39 +181,50 @@ static bool event(struct input_event *pEvent, int nSize)
 //=====================================
 #define  match(t, b, r) ((t < (b + r)) && (t > (b - r)))
 static bool decide(struct input_event *pEvent,
-                   int                 nSize,
                    struct event_table *pPos)
 {
-    int i, v = 0;
-
-    //----------------------
-    // key down only
-    //----------------------
-    if (( EV_KEY != pEvent[0].type ) &&
-        ( 1      != pEvent[0].value ))
-        return false;
+    int v = 0;
+    bool rc = false;
 
     //----------------------
     // decide main
     //----------------------
-    for ( i=1 ; i<nSize ; i++ ) {
+    switch( pEvent->code ) {
+    case ABS_X:
+    CASE_ABS_MT_POSITION_X
 
-        if (pEvent[i].type != EV_ABS)
-            continue;
+        //----------------------
+        // assume X always comes before Y, so clear out
+        // any old stored match flags
+        //----------------------
+        pPos->value[M] = 0;
 
-        switch( pEvent[i].code ) {
-        case ABS_X:
-            if ( match(pEvent[i].value , pPos->value[X], pPos->value[A] ))
-                v |= 0x1;
-            break;
-        case ABS_Y:
-            if ( match(pEvent[i].value , pPos->value[Y], pPos->value[A] ))
-                v |= 0x10;
-            break;
-        }
+        if ( match(pEvent->value , pPos->value[X], pPos->value[A] ))
+            v = MATCH_X;
+        break;
+
+    case ABS_Y:
+    CASE_ABS_MT_POSITION_Y
+
+        if ( match(pEvent->value , pPos->value[Y], pPos->value[A] ))
+            v = MATCH_Y;
+        break;
+
+    default:
+        return rc; // ignore this useless event altogether
     }
 
-    return (0x11 == v);
+    //----------------------
+    // Match only if the previous event (probably X)
+    // and this event (probably Y) both match
+    //----------------------
+    rc = ((MATCH_X | MATCH_Y) == (pPos->value[M] | v));
+    if (rc)
+        pPos->value[M] = 0; // clear this to get ready for the next match
+    else
+        pPos->value[M] = v; // maybe the next event will provide the second match
+
+    return rc;
 }
 
 //=====================================
