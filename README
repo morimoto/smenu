@@ -51,6 +51,13 @@
 
 	> kmenu /dev/input/event0 4 1 0
 
+	The following will retrieve one of two key codes into a variable:
+
+	> KEY=`kmenu /dev/input/event0 -e 21 1 "echo y;false" 49 1 "echo n;false"`
+
+	Note that kmenu (and tmenu) will stop scanning for events if the -e
+	option is given and the script that's run returns a non-zero exit code.
+
 * How to use tmenu ?
 
 	You need to specify the device to watch for events. If no other

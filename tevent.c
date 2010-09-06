@@ -365,6 +365,7 @@ void EventClose( void )
 //=====================================
 void ScanLoop( struct list_head *pLhead,
                const char *pTitle,
+               bool exit_error,
                bool (*hEvent)(struct input_event *event, int size),
                bool (*hDecide)(struct input_event *event, int size, struct event_table *pos))
 {
@@ -424,7 +425,9 @@ void ScanLoop( struct list_head *pLhead,
                 if ( !pos->script )
                     return;
 
-                system( pos->script );
+                if ( system( pos->script ) && exit_error )
+                    return;
+
                 show = true;
             }
         }

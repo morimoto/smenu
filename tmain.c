@@ -27,7 +27,7 @@ static void usage( const char *pMsg )
 {
     printf( "-- %s --\n"
             "Usage: (%s)\n"
-            "tmenu /dev/input/eventX [-t TITLE][x y a script]\n"
+            "tmenu /dev/input/eventX [-e] [-t TITLE] [x y a script]\n"
             "\n"
             "x      : x position\n"
             "y      : y position\n"
@@ -48,6 +48,7 @@ static void usage( const char *pMsg )
 static bool arg_analyze ( struct list_head *pLhead,
                           const char **pDev,
                           const char **pTitle,
+                          bool *pError,
                           int nArgc, char *pstrArgv[] )
 {
     int i = 0;
@@ -68,6 +69,15 @@ static bool arg_analyze ( struct list_head *pLhead,
     //----------------------
     *pDev = pstrArgv[ i ];
     ARGINC(1);
+
+    //-----------------------
+    // get error flag
+    //-----------------------
+    if ( nArgc &&
+         0 == strcmp( "-e", pstrArgv[ i ] )) {
+        ARGINC(1);
+        *pError = true;
+    }
 
     //----------------------
     // get title if it have
@@ -208,27 +218,28 @@ int main ( int nArgc, char *pstrArgv[] )
     struct event_table *pos, *npos;
     const char *dev;
     const char *title = "event scanning";
+    bool exit_error = false;
 
     //----------------------
     // init list head
     //----------------------
     INIT_LIST_HEAD( &lhead );
 
-    if ( !arg_analyze( &lhead, &dev, &title, nArgc, pstrArgv ))
+    if ( !arg_analyze( &lhead, &dev, &title, &exit_error, nArgc, pstrArgv ))
         goto main_end;
 
     //----------------------
     // open event file
     //----------------------
     if( !EventOpen( dev )) {
-        usage ( "open faile" );
+        usage ( "open failed" );
         goto main_end;
     }
 
     //----------------------
     // start scan
     //----------------------
-    ScanLoop( &lhead , title, event, decide );
+    ScanLoop( &lhead, title, exit_error, event, decide );
     EventClose(  );
 
 main_end:

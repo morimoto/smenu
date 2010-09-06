@@ -28,6 +28,7 @@ bool EventOpen( const char *pDevice );
 void EventClose( void );
 void ScanLoop( struct list_head *pLhead,
                const char *pTitle,
+               bool exit_error,
                bool (*hEvent)(struct input_event *event, int size),
                bool (*hDecide)(struct input_event *event, int size, struct event_table *pos));
 

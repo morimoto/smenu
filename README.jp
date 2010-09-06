@@ -52,6 +52,11 @@
 
 	> kmenu /dev/input/event0 4 1 0
 
+	下みたいに -e をつけると実行コードの戻り値が 0 でないとすぐに返事が帰ってくる
+	スクリプトや何かで使える
+
+	> KEY=`kmenu /dev/input/event0 -e 21 1 "echo y;false" 49 1 "echo n;false"`
+
 * How to use tmenu ?
 
 	オプションで event デバイスの指定が必要
