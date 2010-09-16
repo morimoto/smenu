@@ -39,7 +39,6 @@ static void usage( void )
 //
 // analyze argument, and return device name if success
 //=====================================
-#define ARGINC(x) i += x; nArgc -= x;
 #define MAX 256
 static bool arg_analyze ( struct list_head *pLhead,
                           const char **pDev,
@@ -47,56 +46,44 @@ static bool arg_analyze ( struct list_head *pLhead,
                           bool *pError,
                           int nArgc, char *pstrArgv[] )
 {
-    int i = 0;
+    int opt;
     struct event_table *pos;
     char cmd[MAX];
 
-    //----------------------
-    // nArgc must over 2
-    //----------------------
-    if ( nArgc < 2 ) {
+    while ((opt = getopt(nArgc, pstrArgv, "et:")) != -1) {
+        switch (opt) {
+            case 'e':
+                *pError = true;
+                break;
+            case 't':
+                *pTitle = optarg;
+                break;
+            default:
+                usage( );
+                return false;
+        }
+    }
+
+    //------------------------------
+    // need at least the device name
+    //------------------------------
+    if ( optind >= nArgc ) {
         usage( );
         return false;
     }
-    ARGINC(1);
 
     //----------------------
     // get device name
     //----------------------
-    *pDev = pstrArgv[ i ];
-    ARGINC(1);
-
-    //-----------------------
-    // get error flag
-    //-----------------------
-    if ( nArgc &&
-         0 == strcmp( "-e", pstrArgv[ i ] )) {
-        ARGINC(1);
-        *pError = true;
-    }
-
-    //-----------------------
-    // get title if available
-    //-----------------------
-    if ( nArgc &&
-         0 == strcmp( "-t", pstrArgv[ i ] )) {
-        if ( nArgc < 2 ) {
-            usage( );
-            return false;
-        }
-        ARGINC(1);
-
-        *pTitle = pstrArgv[ i ];
-        ARGINC(1);
-    }
+    *pDev = pstrArgv[ optind++ ];
 
     //----------------------
-    // get key definition
+    // get key definitions
     //----------------------
-    for ( ; nArgc ; ) {
+    for ( ; optind < nArgc ; optind += 3 ) {
 
-        // nArgc should over 3
-        if ( nArgc < 3 ) {
+        // need exactly 3 arguments per entry
+        if ( (optind+3) > nArgc ) {
             usage();
             return false;
         }
@@ -110,10 +97,9 @@ static bool arg_analyze ( struct list_head *pLhead,
         INIT_LIST_HEAD( &pos->lst );
         list_add_tail( &pos->lst, pLhead );
 
-        pos->value[K] = atoi( pstrArgv[ i + 0 ] );
-        pos->value[V] = atoi( pstrArgv[ i + 1 ] );
-        pos->script = pstrArgv[ i + 2 ];
-        ARGINC(3);
+        pos->value[K] = atoi( pstrArgv[ optind + 0 ] );
+        pos->value[V] = atoi( pstrArgv[ optind + 1 ] );
+        pos->script = pstrArgv[ optind + 2 ];
 
         if ( strlen(pos->script) > MAX - 1 ) {
             printf( "too long script\n" );
@@ -190,7 +176,7 @@ int main ( int nArgc, char *pstrArgv[] )
     // open event file
     //----------------------
     if( !EventOpen( dev )) {
-        usage ();
+        printf ("Cannot open device\n");
         goto main_end;
     }
 

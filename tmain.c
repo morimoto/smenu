@@ -62,7 +62,6 @@ static void usage( const char *pMsg )
 //
 // analyze argument, and return device name if success
 //=====================================
-#define ARGINC(x) i += x; nArgc -= x;
 #define MAX 256
 static bool arg_analyze ( struct list_head *pLhead,
                           const char **pDev,
@@ -70,57 +69,44 @@ static bool arg_analyze ( struct list_head *pLhead,
                           bool *pError,
                           int nArgc, char *pstrArgv[] )
 {
-    int i = 0;
+    int opt;
     struct event_table *pos;
     char cmd[MAX];
 
-    //----------------------
-    // nArgc must over 2
-    //----------------------
-    if ( nArgc < 2 ) {
-        usage( "argc must over2" );
+    while ((opt = getopt(nArgc, pstrArgv, "et:")) != -1) {
+        switch (opt) {
+            case 'e':
+                *pError = true;
+                break;
+            case 't':
+                *pTitle = optarg;
+                break;
+            default:
+                usage( "Invalid argument" );
+                return false;
+        }
+    }
+
+    //------------------------------
+    // need at least the device name
+    //------------------------------
+    if ( optind >= nArgc ) {
+        usage( "Missing event source name" );
         return false;
     }
-    ARGINC(1);
 
     //----------------------
     // get device name
     //----------------------
-    *pDev = pstrArgv[ i ];
-    ARGINC(1);
-
-    //-----------------------
-    // get error flag
-    //-----------------------
-    if ( nArgc &&
-         0 == strcmp( "-e", pstrArgv[ i ] )) {
-        ARGINC(1);
-        *pError = true;
-    }
-
-    //----------------------
-    // get title if it have
-    //----------------------
-    if ( nArgc &&
-         0 == strcmp( "-t", pstrArgv[ i ] )) {
-        if ( nArgc < 2 ) {
-            usage( "-t option" );
-            return false;
-        }
-        ARGINC(1);
-
-        *pTitle = pstrArgv[ i ];
-        ARGINC(1);
-    }
+    *pDev = pstrArgv[ optind++ ];
 
     //----------------------
     // get x-y radius definition
     //----------------------
-    for ( ; nArgc ; ) {
+    for ( ; optind < nArgc ; optind += 4 ) {
 
-        // nArgc should over 4
-        if ( nArgc < 4 ) {
-            usage( "argc should over 4" );
+        if ( (optind+4) > nArgc ) {
+            usage( "Need 4 arguments per entry" );
             return false;
         }
 
@@ -133,12 +119,11 @@ static bool arg_analyze ( struct list_head *pLhead,
         INIT_LIST_HEAD( &pos->lst );
         list_add_tail( &pos->lst, pLhead );
 
-        pos->value[X]  = atoi( pstrArgv[ i + 0 ] );
-        pos->value[Y]  = atoi( pstrArgv[ i + 1 ] );
-        pos->value[A]  = atoi( pstrArgv[ i + 2 ] );
+        pos->value[X]  = atoi( pstrArgv[ optind + 0 ] );
+        pos->value[Y]  = atoi( pstrArgv[ optind + 1 ] );
+        pos->value[A]  = atoi( pstrArgv[ optind + 2 ] );
         pos->value[M]  = 0;
-        pos->script = pstrArgv[ i + 3 ];
-        ARGINC(4);
+        pos->script = pstrArgv[ optind + 3 ];
 
         if ( strlen(pos->script) > MAX - 1 ) {
             printf( "too long script\n" );
