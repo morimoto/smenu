@@ -24,7 +24,7 @@ Copyright (c) Kuninori Morimoto <morimoto.kuninori@renesas.com>
 //======================================================================
 #define EVNAME(a) [a] = #a
 
-static const char *events[EV_MAX + 1] = {
+static const char * const events[EV_MAX + 1] = {
     [0 ... EV_MAX] = NULL,
     EVNAME( EV_SYN ),		EVNAME( EV_KEY ),
     EVNAME( EV_REL ),		EVNAME( EV_ABS ),
@@ -34,7 +34,7 @@ static const char *events[EV_MAX + 1] = {
     EVNAME( EV_FF_STATUS ),
 };
 
-static const char *keys[KEY_MAX + 1] = {
+static const char * const keys[KEY_MAX + 1] = {
     [0 ... KEY_MAX] = NULL,
     EVNAME( KEY_RESERVED ),		EVNAME( KEY_ESC ),
     EVNAME( KEY_1 ),			EVNAME( KEY_2 ),
@@ -240,7 +240,7 @@ static const char *keys[KEY_MAX + 1] = {
 
 };
 
-static const char *relatives[REL_MAX + 1] = {
+static const char * const relatives[REL_MAX + 1] = {
     [0 ... REL_MAX] = NULL,
     EVNAME( REL_X ),			EVNAME( REL_Y ),
     EVNAME( REL_Z ),			EVNAME( REL_HWHEEL ),
@@ -248,7 +248,7 @@ static const char *relatives[REL_MAX + 1] = {
     EVNAME( REL_MISC ),
 };
 
-static const char *absolutes[ABS_MAX + 1] = {
+static const char * const absolutes[ABS_MAX + 1] = {
     [0 ... ABS_MAX] = NULL,
     EVNAME( ABS_X ),		EVNAME( ABS_Y ),
     EVNAME( ABS_Z ),		EVNAME( ABS_RX ),
@@ -272,14 +272,14 @@ static const char *absolutes[ABS_MAX + 1] = {
 #endif
 };
 
-static const char *misc[MSC_MAX + 1] = {
+static const char * const misc[MSC_MAX + 1] = {
     [ 0 ... MSC_MAX] = NULL,
     EVNAME( MSC_SERIAL ),		EVNAME( MSC_PULSELED ),
     EVNAME( MSC_GESTURE ),		EVNAME( MSC_RAW ),
     EVNAME( MSC_SCAN ),
 };
 
-static const char *leds[LED_MAX + 1] = {
+static const char * const leds[LED_MAX + 1] = {
     [0 ... LED_MAX] = NULL,
     EVNAME( LED_NUML ),		EVNAME( LED_CAPSL ),
     EVNAME( LED_SCROLLL ),		EVNAME( LED_COMPOSE ),
@@ -291,13 +291,13 @@ static const char *leds[LED_MAX + 1] = {
 #endif
 };
 
-static const char *repeats[REP_MAX + 1] = {
+static const char * const repeats[REP_MAX + 1] = {
     [0 ... REP_MAX] = NULL,
     EVNAME( REP_DELAY ),
     EVNAME( REP_PERIOD ),
 };
 
-static const char *sounds[SND_MAX + 1] = {
+static const char * const sounds[SND_MAX + 1] = {
     [0 ... SND_MAX] = NULL,
     EVNAME( SND_CLICK ),
     EVNAME( SND_BELL ),
@@ -321,7 +321,7 @@ static nfds_t g_PollNum;
 //=====================================
 static const char* getevname( int nType, int nCode )
 {
-    const char **names;
+    const char * const *names;
     int size;
 
     switch ( nType ) {
