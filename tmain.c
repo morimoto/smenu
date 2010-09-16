@@ -168,10 +168,7 @@ static bool arg_analyze ( struct list_head *pLhead,
 //=====================================
 static bool event(struct input_event *pEvent)
 {
-    if ( EV_ABS == pEvent->type )
-        return true;
-
-    return false;
+    return ( EV_ABS == pEvent->type ) || ( EV_SYN == pEvent->type );
 }
 
 //=====================================
@@ -186,18 +183,21 @@ static bool decide(struct input_event *pEvent,
     int v = 0;
     bool rc = false;
 
+
+    if ( EV_SYN == pEvent->type ) {
+        //----------------------
+        // clear out any old stored match flags
+        //----------------------
+        pPos->value[M] = 0;
+        return rc;
+    }
+
     //----------------------
     // decide main
     //----------------------
     switch( pEvent->code ) {
     case ABS_X:
     CASE_ABS_MT_POSITION_X
-
-        //----------------------
-        // assume X always comes before Y, so clear out
-        // any old stored match flags
-        //----------------------
-        pPos->value[M] = 0;
 
         if ( match(pEvent->value , pPos->value[X], pPos->value[A] ))
             v = MATCH_X;
