@@ -26,7 +26,12 @@ struct event_table {
     const char *script;
 };
 
-bool EventOpen( const char *pDevice );
+struct device_table {
+    struct list_head lst;
+    const char *device;
+};
+
+bool EventOpen( struct list_head *pDevhead );
 void EventClose( void );
 void ScanLoop( struct list_head *pLhead,
                const char *pTitle,

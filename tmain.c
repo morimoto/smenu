@@ -64,13 +64,14 @@ static void usage( const char *pMsg )
 //=====================================
 #define MAX 256
 static bool arg_analyze ( struct list_head *pLhead,
-                          const char **pDev,
+                          struct list_head *pDevhead,
                           const char **pTitle,
                           bool *pError,
                           int nArgc, char *pstrArgv[] )
 {
     int opt;
     struct event_table *pos;
+    struct device_table *dev;
     char cmd[MAX];
 
     while ((opt = getopt(nArgc, pstrArgv, "et:")) != -1) {
@@ -98,7 +99,14 @@ static bool arg_analyze ( struct list_head *pLhead,
     //----------------------
     // get device name
     //----------------------
-    *pDev = pstrArgv[ optind++ ];
+    dev = malloc(sizeof( struct device_table ));
+    if (!dev) {
+        printf("malloc error\n");
+        return false;
+    }
+    INIT_LIST_HEAD( &dev->lst );
+    list_add_tail( &dev->lst, pDevhead );
+    dev->device = pstrArgv[ optind++ ];
 
     //----------------------
     // get x-y radius definition
@@ -219,9 +227,9 @@ static bool decide(struct input_event *pEvent,
 //=====================================
 int main ( int nArgc, char *pstrArgv[] )
 {
-    struct list_head lhead;
+    struct list_head lhead, devhead;
     struct event_table *pos, *npos;
-    const char *dev;
+    struct device_table *dev, *ndev;
     const char *title = NULL;
     bool exit_error = false;
     int rc = ERROR_EXIT; // assume error
@@ -230,14 +238,15 @@ int main ( int nArgc, char *pstrArgv[] )
     // init list head
     //----------------------
     INIT_LIST_HEAD( &lhead );
+    INIT_LIST_HEAD( &devhead );
 
-    if ( !arg_analyze( &lhead, &dev, &title, &exit_error, nArgc, pstrArgv ))
+    if ( !arg_analyze( &lhead, &devhead, &title, &exit_error, nArgc, pstrArgv ))
         goto main_end;
 
     //----------------------
     // open event file
     //----------------------
-    if( !EventOpen( dev )) {
+    if( !EventOpen( &devhead )) {
         usage ( "open failed" );
         goto main_end;
     }
@@ -253,6 +262,9 @@ main_end:
 
     list_for_each_entry_safe(pos, npos, &lhead, lst)
         free ( pos );
+
+    list_for_each_entry_safe(dev, ndev, &devhead, lst)
+        free ( dev );
 
     return rc;
 

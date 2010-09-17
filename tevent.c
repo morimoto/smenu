@@ -11,8 +11,9 @@ Copyright (c) Kuninori Morimoto <morimoto.kuninori@renesas.com>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <poll.h>
 
-#include "./tevent.h"
+#include "tevent.h"
 
 //======================================================================
 //
@@ -303,7 +304,8 @@ static const char *sounds[SND_MAX + 1] = {
     EVNAME( SND_TONE ),
 };
 
-static int g_Descriptor = -1;
+static struct pollfd *g_PollList;
+static nfds_t g_PollNum;
 
 //======================================================================
 //
@@ -352,14 +354,26 @@ static const char* getevname( int nType, int nCode )
 static int getevent( struct input_event **ppEvent )
 {
     static struct input_event _event[EVENTMAX];
-    int size;
+    int size, num;
+    struct pollfd *p;
 
-    if ( g_Descriptor < 0 ) {
+    if ( g_PollNum < 1 ) {
         printf( "EventOpen is needed\n" );
         return -1;
     }
 
-    size = read( g_Descriptor , _event , sizeof(_event) );
+    num = poll( g_PollList, g_PollNum, -1);
+    if ( num < 1 )
+        return -1;
+
+    num = g_PollNum;
+    for ( p=g_PollList; num && !p->revents; --num, ++p )
+        ; /* search for the first fd with available data */
+
+    if ( num <= 0 )
+        return -1; /* nothing ready (should never happen) */
+
+    size = read( p->fd, _event , sizeof(_event) );
     size /= (int)sizeof( struct input_event );
 
     if ( size < 1 )
@@ -381,19 +395,44 @@ static int getevent( struct input_event **ppEvent )
 //       EventOpen / EventClose
 //
 //=====================================
-bool EventOpen( const char *pDevice )
+bool EventOpen( struct list_head *pDevhead )
 {
-    if ( !pDevice )
+    int num = 0;
+    struct device_table *dev, *ndev;
+    struct pollfd *p;
+
+    if ( !pDevhead )
         return false;
 
-    g_Descriptor = open( pDevice, O_RDONLY );
-    return ( g_Descriptor >= 0 );
+    list_for_each_entry_safe(dev, ndev, pDevhead, lst)
+        ++num;
+
+    g_PollList = calloc(num, sizeof(struct pollfd));
+
+    p = g_PollList;
+    list_for_each_entry_safe(dev, ndev, pDevhead, lst) {
+        p->fd = open( dev->device, O_RDONLY );
+        p->events = POLLIN;
+        if ( p->fd < 0 ) {
+            free( g_PollList );
+            g_PollList = NULL;
+            g_PollNum = 0;
+            return false;
+        }
+        ++g_PollNum;
+        ++p;
+    }
+    return true;
 }
 
 void EventClose( void )
 {
-    close( g_Descriptor );
-    g_Descriptor = -1;
+    int i;
+    for ( i=g_PollNum; i--; )
+        close( g_PollList[i].fd );
+    free( g_PollList );
+    g_PollList = NULL;
+    g_PollNum = 0;
 }
 
 //=====================================
