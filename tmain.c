@@ -98,6 +98,9 @@ static bool arg_analyze ( struct list_head *pLhead,
 
     //----------------------
     // get device name
+    // note that only a single device is currently supported, because the X/Y
+    // event matching going on in decide() doesn't keep track of the source
+    // of events
     //----------------------
     dev = malloc(sizeof( struct device_table ));
     if (!dev) {

@@ -58,6 +58,14 @@
 	Note that kmenu (and tmenu) will stop scanning for events if the -e
 	option is given and the script that's run returns a non-zero exit code.
 
+	kmenu can read from more than one event device at once if each event file
+	is prefixed with -f, e.g.
+
+	> kmenu -f /dev/input/event0 -f /dev/input/event1 4 1 0 272 1 program
+
+	Events will match when they come from any device, so keyboard presses can
+	be combined with mouse clicks, for example.
+
 * How to use tmenu ?
 
 	You need to specify the device to watch for events. If no other

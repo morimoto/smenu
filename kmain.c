@@ -25,7 +25,7 @@ Copyright (c) Kuninori Morimoto <morimoto.kuninori@renesas.com>
 static void usage( void )
 {
     printf( "Usage: (%s)\n"
-            "kmenu /dev/input/eventX [-e] [-t TITLE] [k v script]\n"
+            "kmenu [-f] /dev/input/eventX [-e] [-t TITLE] [k v script]\n"
             "\n"
             "k      : event number\n"
             "v      : event value\n"
@@ -47,11 +47,12 @@ static bool arg_analyze ( struct list_head *pLhead,
                           int nArgc, char *pstrArgv[] )
 {
     int opt;
+    bool got_dev = false;
     struct event_table *pos;
     struct device_table *dev;
     char cmd[MAX];
 
-    while ((opt = getopt(nArgc, pstrArgv, "et:")) != -1) {
+    while ((opt = getopt(nArgc, pstrArgv, "et:f:")) != -1) {
         switch (opt) {
             case 'e':
                 *pError = true;
@@ -59,31 +60,42 @@ static bool arg_analyze ( struct list_head *pLhead,
             case 't':
                 *pTitle = optarg;
                 break;
+            case 'f':
+                dev = malloc(sizeof( struct device_table ));
+                if (!dev) {
+                    printf("malloc error\n");
+                    return false;
+                }
+                INIT_LIST_HEAD( &dev->lst );
+                list_add_tail( &dev->lst, pDevhead );
+                dev->device = optarg;
+                got_dev = true;
+                break;
             default:
                 usage( );
                 return false;
         }
     }
 
-    //------------------------------
-    // need at least the device name
-    //------------------------------
-    if ( optind >= nArgc ) {
-        usage( );
-        return false;
-    }
+    if (!got_dev) {
 
-    //----------------------
-    // get device name
-    //----------------------
-    dev = malloc(sizeof( struct device_table ));
-    if (!dev) {
-        printf("malloc error\n");
-        return false;
+        //-----------------------------
+        // the device name is mandatory
+        //-----------------------------
+        if ( optind >= nArgc ) {
+            usage( );
+            return false;
+        }
+
+        dev = malloc(sizeof( struct device_table ));
+        if (!dev) {
+            printf("malloc error\n");
+            return false;
+        }
+        INIT_LIST_HEAD( &dev->lst );
+        list_add_tail( &dev->lst, pDevhead );
+        dev->device = pstrArgv[ optind++ ];
     }
-    INIT_LIST_HEAD( &dev->lst );
-    list_add_tail( &dev->lst, pDevhead );
-    dev->device = pstrArgv[ optind++ ];
 
     //----------------------
     // get key definitions
