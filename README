@@ -41,15 +41,17 @@
 	Event: type 0 (EV_SYN), code 0 (EV_SYN), value 0
 	...
 
-	For example, to print "hallo world" when KEY_1 is pressed:
+	Below is the example, it works as...
+		KEY_1 pressed : print "hallo world",
+		KEY_2 pressed : run "ls" command,
+		KEY_3 pressed : exit kmenu,
 
-	> kmenu /dev/input/event0 2 1 "echo hallo world"
+	> kmenu /dev/input/event0 2 1 "echo hallo world" \
+	                          3 1 "ls"\
+	                          4 1 0
 
-	where 2 is the code for KEY_1, and 1 means "pressed".
-
-	The following will exit kmenu when KEY_3 is pressed:
-
-	> kmenu /dev/input/event0 4 1 0
+	where 2, 3, 4 are the code for KEY_1, KEY_2, KEY_3,
+	and 1 means "pressed".
 
 	The following will retrieve one of two key codes into a variable:
 
@@ -82,14 +84,14 @@
 	Event: type 3 (EV_ABS), code 1 (ABS_Y), value 1712
 	....
 
-	For example, to print "hallo world" when a press occurs within a
-	region of size 1000 around the point x = 1500, y = 1500:
+	Below is the example, when a press occurs in...
+		(x, y) = (1500, 1500), region = 500 : print "hallo world"
+		(x, y) = ( 800,  500), region = 300  : run "ls"
+		(x, y) = ( 100,  100), region = 100  : exit tmenu
 
-	> tmenu /dev/input/event1 1500 1500 1000 "echo hallo world"
-
-	The following will exit tmenu when such a press occurs:
-
-	> tmenu /dev/input/event1 1500 1500 1000 0
+	> tmenu /dev/input/event1 1500 1500 500 "echo hallo world"\
+	                           800  500 300 "ls"\
+	                           100  100 100 0
 
 * How to link statically ?
 
